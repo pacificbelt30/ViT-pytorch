@@ -269,6 +269,7 @@ class VisionTransformer(nn.Module):
         self.transformer = Transformer(config, img_size, vis)
         self.head = Linear(config.hidden_size, num_classes)
         self.only_logits = only_logits
+        self._return_hidden_activations = False
 
     def forward(self, x, labels=None):
         x, attn_weights = self.transformer(x)
@@ -278,8 +279,14 @@ class VisionTransformer(nn.Module):
             loss_fct = CrossEntropyLoss()
             loss = loss_fct(logits.view(-1, self.num_classes), labels.view(-1))
             return loss
+
         else:
-            return logits if self.only_logits else (logits, attn_weights)
+            if self._return_hidden_activations:
+                # return self.__forward_multi(x)
+                return [logits] if self.only_logits else (logits, attn_weights)
+            else:
+                # return self.__forward_single(x)
+                return logits if self.only_logits else (logits, attn_weights)
             # return logits, attn_weights
 
     def load_from(self, weights):
