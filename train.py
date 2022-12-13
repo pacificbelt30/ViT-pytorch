@@ -62,7 +62,7 @@ def setup(args):
 
     num_classes = 10 if args.dataset == "cifar10" else 100
 
-    model = VisionTransformer(config, args.img_size, zero_head=True, num_classes=num_classes)
+    model = VisionTransformer(config, args.img_size, zero_head=True, num_classes=num_classes,only_logits=False)
     model.load_from(np.load(args.pretrained_dir))
     model.to(args.device)
     num_params = count_parameters(model)
@@ -207,6 +207,7 @@ def train(args, model):
                 # with amp.scale_loss(loss, optimizer) as scaled_loss:
                     # scaled_loss.backward()
                 pass
+                loss.backward()
             else:
                 loss.backward()
 
