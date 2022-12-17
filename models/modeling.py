@@ -239,12 +239,15 @@ class Encoder(nn.Module):
 
     def forward(self, hidden_states):
         attn_weights = []
+        activations = []
         for layer_block in self.layer:
             hidden_states, weights = layer_block(hidden_states)
+            activations.append(hidden_states)
             if self.vis:
                 attn_weights.append(weights)
         encoded = self.encoder_norm(hidden_states)
-        return encoded, attn_weights
+        # return encoded, attn_weights
+        return encoded, activations
 
 
 class Transformer(nn.Module):
@@ -255,8 +258,10 @@ class Transformer(nn.Module):
 
     def forward(self, input_ids):
         embedding_output = self.embeddings(input_ids)
-        encoded, attn_weights = self.encoder(embedding_output)
-        return encoded, attn_weights
+        # encoded, attn_weights = self.encoder(embedding_output)
+        encoded, activation = self.encoder(embedding_output)
+        # return encoded, attn_weights
+        return encoded, [activation]+encoded
 
 
 class VisionTransformer(nn.Module):
@@ -272,7 +277,8 @@ class VisionTransformer(nn.Module):
         self._return_hidden_activations = False
 
     def forward(self, x, labels=None):
-        x, attn_weights = self.transformer(x)
+        # x, attn_weights = self.transformer(x)
+        x, activation = self.transformer(x)
         logits = self.head(x[:, 0])
 
         if labels is not None:
@@ -283,7 +289,7 @@ class VisionTransformer(nn.Module):
         else:
             if self._return_hidden_activations:
                 # return self.__forward_multi(x)
-                return [logits] if self.only_logits else (logits, attn_weights)
+                return activation+[logits] if self.only_logits else (logits, attn_weights)
             else:
                 # return self.__forward_single(x)
                 return logits if self.only_logits else (logits, attn_weights)
