@@ -261,7 +261,7 @@ class Transformer(nn.Module):
         # encoded, attn_weights = self.encoder(embedding_output)
         encoded, activation = self.encoder(embedding_output)
         # return encoded, attn_weights
-        return encoded, [activation]+encoded
+        return encoded, activation+[encoded]
 
 
 class VisionTransformer(nn.Module):
